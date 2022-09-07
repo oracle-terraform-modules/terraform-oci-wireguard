@@ -1,0 +1,41 @@
+tenancy_id = ""
+
+# general oci parameters
+compartment_id = ""
+label_prefix   = "wg"
+
+# ssh keys
+# ssh_public_key       = ""
+# ssh_public_key_path  = "none"
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+
+availability_domain = 1
+
+wireguard_access = ["anywhere"]
+
+ig_route_id = ""
+
+netnum = 3
+
+newbits = 13
+
+vcn_id = ""
+
+wireguard_image_id = "Oracle"
+
+wireguard_os_version = "9"
+
+wireguard_shape = {
+  shape="VM.Standard.E4.Flex",
+  ocpus=1,
+  memory=4,
+  boot_volume_size=50
+}
+
+wireguard_state= "RUNNING"
+
+wireguard_timezone = "Australia/Sydney"
+
+wireguard_type = "public"
+
+upgrade_wireguard = true

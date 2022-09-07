@@ -1,0 +1,153 @@
+= Quickstart
+:idprefix:
+:idseparator: -
+:sectlinks:
+:sectnums:
+:toc: auto
+
+:uri-repo: https://github.com/oracle-terraform-modules/terraform-oci-wireguard
+:uri-rel-file-base: link:{uri-repo}/blob/main
+:uri-rel-tree-base: link:{uri-repo}/tree/main
+:uri-docs: {uri-rel-file-base}/docs
+:uri-instructions: {uri-docs}/instructions.adoc
+:uri-oci-keys: https://docs.cloud.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm
+:uri-oci-ocids: https://docs.cloud.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm#five
+:uri-oci-okepolicy: https://docs.cloud.oracle.com/iaas/Content/ContEng/Concepts/contengpolicyconfig.htm#PolicyPrerequisitesService
+:uri-oci-provider: https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/terraformproviderconfiguration.htm
+:uri-oci-provider-precedence: https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/terraformproviderconfiguration.htm#terraformproviderconfiguration_topic-Order_of_Precedence
+:uri-terraform: https://www.terraform.io
+:uri-terraform-oci: https://www.terraform.io/docs/providers/oci/index.html
+:uri-terraform-options: {uri-docs}/terraformoptions.adoc
+:uri-terraform-precedence: https://www.terraform.io/docs/language/values/variables.html#variable-definition-precedence
+:uri-variables: {uri-rel-file-base}/variables.tf
+:uri-wireguard-ol: https://docs.oracle.com/en/operating-systems/oracle-linux/vpn/vpn-ConfiguringaVPNbyUsingWireGuard.html#vpn-wguard
+
+== Assumptions
+
+1. You have setup the {uri-oci-keys}[required keys]
+2. You know the {uri-oci-ocids}[required OCIDs]
+3. You have a WireGuard client installed
+
+== Prerequisites
+
+1. git is installed
+2. ssh client is installed
+3. Terraform 1.0.0+ is installed
+
+== Provision using this git repo
+
+. Clone the repo:
+
++
+[source,bash]
+----
+git clone https://github.com/oracle-terraform-modules/terraform-oci-wireguard.git tfwg
+
+cd tfwg
+cp terraform.tfvars.example terraform.tfvars
+----
+
+=== Creating Providers
+
+You need to create 2 providers:
+.. 1 provider for the region where your WireGuard instance will be created
+.. 1 provider for the home region. This is required for conducting identity operations. *Note that your home region may not necessarily be the same as your current region.*
+
+. Create a provider.tf file in root add 2 providers:
++
+----
+provider "oci" {
+  fingerprint      = var.api_fingerprint
+  private_key_path = var.api_private_key_path
+  region           = var.region
+  tenancy_ocid     = var.tenancy_id
+  user_ocid        = var.user_id
+}
+
+provider "oci" {
+  fingerprint      = var.api_fingerprint
+  private_key_path = var.api_private_key_path
+  region           = var.home_region
+  tenancy_ocid     = var.tenancy_id
+  user_ocid        = var.user_id
+  alias            = "home"
+}
+----
+
+
+. You can also create use providers ({uri-oci-provider}[using differerent methods]) such as:
+
+.. config file profile
+.. auth token
+.. instance principal
+
+
+. Set mandatory parameters in the provider depending on your {uri-oci-provider}[method of initializing your provider]:
+
+* api_fingerprint
+* api_private_key_path
+* compartment_id
+* tenancy_id
+* user_id
+* region
+
+You can set those parameters using:
+
+1. environment variables (e.g. TF_api_fingerprint)
+2. a `terraform.tfvars` file
+
+Please ensure you understand the {uri-terraform-precedence}[Terraform variable definition order of precedence] and {uri-oci-provider-precedence}[that of OCI].
+
+. Run Terraform:
+
++
+[source,bash]
+----
+terraform init
+terraform plan
+terraform apply
+----
+
+=== Configure WireGuard Tunnel
+
+==== On the WireGuard client
+
+TODO
+
+==== On the WireGuard server
+
+. ssh to the WireGuard host
+. Obtain the its public key:
+
++
+----
+cat /root/wireguard/publickey
+----
+
+. Uncomment the peer configuration on the server in the file ```/etc/wireguard/wg0.conf```
+
++
+----
+# [Peer]
+# PublicKey = CLIENT_PUBLIC_KEY
+# AllowedIPs = 192.168.2.2/32
+# Endpoint = CLIENT_PUBLIC_IP:60477
+----
+
+. Replace `CLIENT_PUBLIC_KEY` with your public key
+. Replace `CLIENT_PUBLIC_IP` with your public IP address
+
+. Start WireGuard
+
++
+----
+# wg-quick up wg0
+----
+
+== Related documentation
+
+* {uri-wireguard-ol}[Configuring WireGuard on Oracle Linux]
+
+* {uri-instructions}[Detailed Instructions]
+
+* {uri-terraform-options}[All Terraform configuration options] for {uri-repo}[this project]

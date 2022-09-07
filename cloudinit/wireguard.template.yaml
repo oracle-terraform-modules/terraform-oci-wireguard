@@ -1,0 +1,19 @@
+#cloud-config
+package_upgrade: ${upgrade_wireguard}
+timezone: ${wireguard_timezone} 
+packages:
+  - wireguard-tools
+write_files:
+  - path: "/root/wireguard/wireguard.sh"
+    permissions: "0700"
+    encoding: "gzip+base64"
+    content: |
+      ${wireguard_setup}
+  - path: "/root/wireguard/wg0.conf"
+    permissions: "0700"
+    encoding: "gzip+base64"
+    content: |
+      ${wireguard_conf}
+runcmd:
+ - bash /root/wireguard/wireguard.sh
+ - touch /home/opc/wireguard.finish
