@@ -32,4 +32,9 @@ locals {
     templatefile("${path.module}/conf/wg.template.conf", {}
     )
   )
+
+  peer_publickey   = "PublicKey="
+  peer_allowed_ips = join("", ["AllowedIPs=", local.vcn_cidr])
+  peer_endpoint    = join(",", ["Endpoint=${data.oci_core_vnic.wireguard_vnic.public_ip_address}:51820"])
+  peer_conf        = join("\n", ["[Peer]", local.peer_publickey, local.peer_allowed_ips, local.peer_endpoint])
 }
