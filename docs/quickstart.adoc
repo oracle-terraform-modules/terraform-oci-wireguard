@@ -75,7 +75,7 @@ provider "oci" {
 ----
 
 
-. You can also create use providers ({uri-oci-provider}[using differerent methods]) such as:
+. You can also use providers ({uri-oci-provider}[using differerent methods]) such as:
 
 .. config file profile
 .. auth token
@@ -84,12 +84,48 @@ provider "oci" {
 
 . Set mandatory parameters in the provider depending on your {uri-oci-provider}[method of initializing your provider]:
 
-* api_fingerprint
-* api_private_key_path
-* compartment_id
-* tenancy_id
-* user_id
-* region
++
+----
+tenancy_id = "replace.me"
+
+# general oci parameters
+compartment_id = "replace.me"
+label_prefix   = "replace.me"
+
+# ssh keys
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+
+availability_domain = 1
+
+wireguard_access = ["anywhere"]
+
+ig_route_id = "replace.me"
+
+netnum = 3
+
+newbits = 13
+
+vcn_id = "replace.me"
+
+wireguard_image_id = "Oracle"
+
+wireguard_os_version = "9"
+
+wireguard_shape = {
+  shape="VM.Standard.E4.Flex",
+  ocpus=2,
+  memory=32,
+  boot_volume_size=50
+}
+
+wireguard_state= "RUNNING"
+
+wireguard_timezone = "Australia/Sydney"
+
+wireguard_type = "public"
+
+upgrade_wireguard = false
+----
 
 You can set those parameters using:
 
@@ -112,17 +148,51 @@ terraform apply
 
 ==== On the WireGuard client
 
-TODO
+. The above Terraform apply run will output something like:
 
-==== On the WireGuard server
+----
+[Peer]
+PublicKey=
+AllowedIPs=10.0.0.0/16
+Endpoint=<public-ip>:51820
+----
 
-. ssh to the WireGuard host
-. Obtain the its public key:
+. ssh to the WireGuard host to obtain the public key:
 
 +
 ----
-cat /root/wireguard/publickey
+ssh opc@<public-ip>
 ----
+
+. Obtain the public key:
+
++
+----
+cat /home/opc/publickey
+
+zyxw0987!@#$vuts6543
+----
+
+. Add or edit your local WireGuard client tunnel configuration and replace the public key and public IP address:
+
++
+----
+[Interface]
+PrivateKey = abcd1234efgh5678
+ListenPort = 60477
+Address = 192.168.2.2/32
+
+[Peer]
+PublicKey = zyxw0987!@#$vuts6543
+AllowedIPs = 10.0.0.0/16
+Endpoint = <public-ip>:51820
+----
+
+. Also note your local public key
+
+==== On the WireGuard server
+
+. Edit the wireguard config file:
 
 . Uncomment the peer configuration on the server in the file ```/etc/wireguard/wg0.conf```
 
@@ -134,7 +204,7 @@ cat /root/wireguard/publickey
 # Endpoint = CLIENT_PUBLIC_IP:60477
 ----
 
-. Replace `CLIENT_PUBLIC_KEY` with your public key
+. Replace `CLIENT_PUBLIC_KEY` with your client's public key
 . Replace `CLIENT_PUBLIC_IP` with your public IP address
 
 . Start WireGuard

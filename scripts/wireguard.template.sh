@@ -6,6 +6,10 @@ firewall-offline-cmd --add-service=wireguard && systemctl restart firewalld
 
 mkdir -p /root/wireguard && wg genkey | tee /root/wireguard/privatekey | wg pubkey > /root/wireguard/publickey
 
+cp /root/wireguard/publickey /home/opc/publickey
+
+chown opc:opc /home/opc/publickey
+
 SERVER_PRIVATE_KEY=$(cat /root/wireguard/privatekey)
 export SERVER_PRIVATE_KEY
 

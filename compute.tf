@@ -3,12 +3,9 @@ resource "oci_core_instance" "wireguard" {
   compartment_id      = var.compartment_id
 
   agent_config {
-
     are_all_plugins_disabled = true
     is_management_disabled   = true
     is_monitoring_disabled   = true
-
-
   }
 
   create_vnic_details {
@@ -35,13 +32,13 @@ resource "oci_core_instance" "wireguard" {
     user_data           = data.cloudinit_config.wireguard.rendered
   }
 
-  shape = lookup(var.wireguard_shape, "shape", "VM.Standard.E2.2")
+  shape = lookup(var.wireguard_shape, "shape", "VM.Standard.E4.Flex")
 
   dynamic "shape_config" {
-    for_each = length(regexall("Flex", lookup(var.wireguard_shape, "shape", "VM.Standard.E3.Flex"))) > 0 ? [1] : []
+    for_each = length(regexall("Flex", lookup(var.wireguard_shape, "shape", "VM.Standard.E4.Flex"))) > 0 ? [1] : []
     content {
-      ocpus         = max(1, lookup(var.wireguard_shape, "ocpus", 1))
-      memory_in_gbs = (lookup(var.wireguard_shape, "memory", 4) / lookup(var.wireguard_shape, "ocpus", 1)) > 64 ? (lookup(var.wireguard_shape, "ocpus", 1) * 4) : lookup(var.wireguard_shape, "memory", 4)
+      ocpus         = max(1, lookup(var.wireguard_shape, "ocpus", 2))
+      memory_in_gbs = (lookup(var.wireguard_shape, "memory", 32) / lookup(var.wireguard_shape, "ocpus", 2)) > 64 ? (lookup(var.wireguard_shape, "ocpus", 2) * 16) : lookup(var.wireguard_shape, "memory", 32)
     }
   }
 
@@ -56,5 +53,5 @@ resource "oci_core_instance" "wireguard" {
   timeouts {
     create = "60m"
   }
-
 }
+
